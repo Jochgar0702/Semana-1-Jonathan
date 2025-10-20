@@ -1,0 +1,137 @@
+/*
+* SPDX-FileCopyrightText: 2010-2022 Espressif Systems (Shanghai) CO LTD
+*
+* SPDX-License-Identifier: CC0-1.0
+*/
+
+
+
+
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "driver/gpio.h"
+#include "esp_timer.h"
+#include "esp_log.h"
+
+
+//constantes
+
+
+#define PINLEDROJO 32
+#define PINLEDAMRILLO 33
+#define PINLEDVERDE 25
+
+
+
+
+#define MASKPINESLEDS (1ULL<<PINLEDROJO) | (1ULL<<PINLEDAMRILLO) | (1ULL<<PINLEDVERDE)
+static const char* TAG = "MyModule";
+//decalracion de variables globales
+
+
+int accion = 1;
+//declaracion de funciones callback
+
+
+void isrTimerSemaforo(void *);
+//handles
+
+
+esp_timer_handle_t h_timerSemaforo;
+
+
+
+
+
+
+void app_main(void)
+{
+
+
+int pinesSemaforo[3]=[PINLEDVERDE, PINLEDAMRILLO, PINLEDROJO];
+
+
+int tiempos[3]=[4000000, 1000000, 5000000];
+
+
+
+gpio_config_t configPinesLeds = {
+.pin_bit_mask = MASKPINESLEDS,
+.mode = GPIO_MODE_INPUT_OUTPUT,
+.pull_up_en = GPIO_PULLUP_DISABLE,
+.pull_down_en = GPIO_PULLDOWN_DISABLE,
+.intr_type = GPIO_INTR_DISABLE,
+};
+
+
+
+
+
+
+gpio_config(&configPinesLeds);
+
+
+//poner todos los leds a 0
+//int i = 0;
+
+
+//while (i<3)
+//{
+// /* code */
+// gpio_set_level(pinesSemaforo[i], 0);
+//
+// i++;
+//}
+
+
+for (int i = 0 ; i<3 ; i++)
+{
+/* code */
+gpio_set_level(pinesSemaforo[i], 0);
+}
+
+
+
+//configuracion y creacion del timer semaforo
+
+
+esp_timer_create_args_t configTimerSemaforo = {
+.callback = isrTimerSemaforo
+};
+esp_timer_create(&configTimerSemaforo, &h_timerSemaforo);
+int accionSiguiente = 1;
+accion = 1;
+
+
+while (1)
+{
+
+for (int i = 0 ; i<3 ; i++)
+{
+/* code */
+gpio_set_level(pinesSemaforo[i], 0);
+}
+
+
+gpio_set_level(pinesSemaforo[accion-1] , 1);
+esp_timer_start_once(h_timerSemaforo, tiempos[accion-1]);
+
+}
+
+
+}
+
+
+void isrTimerSemaforo(void * args)
+{
+if(accion > 0 && accion < 3)
+{
+ESP_LOGI(TAG, "hey5 %d", accion);
+accion++;
+}
+else
+{
+accion = 1;
+}
+}
+
