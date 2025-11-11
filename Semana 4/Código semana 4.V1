@@ -1,0 +1,96 @@
+Código:
+/*
+ * SPDX-FileCopyrightText: 2010-2022 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: CC0-1.0
+ */
+
+
+ //librerias
+
+
+#include <stdio.h>
+#include <math.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "driver/gpio.h"
+#include "esp_timer.h"
+#include "esp_log.h"
+#include "esp_adc/adc_oneshot.h"
+
+
+
+
+//constantes
+   
+#define PINSENSORTEMP 36
+#define MASKSENSORTEMP 1ULL << PINSENSORTEMP
+
+
+static const char* TAG = "MyModule";
+
+
+//declaración funciones
+
+
+void atareaSensorTemperatura(void*)
+
+
+
+
+//handles
+
+
+adc_oneshot_unit_handle_t h_cad1;
+   
+void app_main(void)
+{
+   
+    //creación tareas
+       
+   
+    while(1)
+    {
+        vTaskDelay(pdMS_TO_TICKS(10000));
+        ESP_LOGI(TAG, "SOY EL MAIN");
+    }
+}
+
+
+//definición funciones tareas
+void tareaSensorTemperatura(void * parametro)
+{
+    //Configurar pin gpio36 como entrada
+    gpio_config_t configGpio36 = {
+        .intr_type = GPIO_MODE_DISABLE,
+        .mode = GPIO_MODE_INPUT,
+        .pull_up_en = GPIO_PULLUP_DISABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+    };
+
+
+    gpio_config(&configGpio36);
+
+
+    adc_oneshot_unit_init_cfg_t configCAD1 = {
+        .clk_src = ADC_RTC_CLK_SRC_DEFAULT,
+        .ulp_mode = ADC_ULP_MODE_DISABLE,
+        .unit_id = ADC_UNIT_1,
+    }
+
+
+    while(1)
+    {
+
+
+    }
+}
+
+
+
+CMakelist.
+
+idf_component_register(SRCS "hello_world_main.c"
+                    PRIV_REQUIRES spi_flash
+                    INCLUDE_DIRS ""
+                    REQUIRES esp_driver_gpio REQUIRES esp_timer REQUIRES esp_adc)
