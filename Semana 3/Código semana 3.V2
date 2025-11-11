@@ -1,0 +1,71 @@
+Código:
+/*
+* SPDX-FileCopyrightText: 2010-2022 Espressif Systems (Shanghai) CO LTD
+*
+* SPDX-License-Identifier: CC0-1.0
+*/
+
+
+#include <stdio.h>
+#include <math.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "driver/gpio.h"
+#include "esp_timer.h"
+#include "esp_log.h"
+#include "hal/adc_types.h"
+#include "esp_adc/adc_oneshot.h"
+
+
+static const char* TAG = "MyModule";
+
+
+//handles
+
+
+adc_oneshot_unit_handle_t h_pot1;
+
+
+void app_main(void)
+{
+
+
+    adc_oneshot_unit_init_cfg_t configUnitADCPot = {
+        .unit_id = ADC_UNIT_1,
+        .clk_src = ADC_RTC_CLK_SRC_DEFAULT,
+        .ulp_mode = ADC_ULP_MODE_DISABLE,
+    };
+    adc_oneshot_new_unit(&configUnitADCPot, &h_pot1);
+
+
+    adc_oneshot_chan_cfg_t configCanalADCPort = {
+        .bitwidth = ADC_BITWIDTH_9,
+        .atten = ADC_ATTEN_DB_12,
+    };
+    adc_oneshot_config_channel(h_pot1, ADC_CHANNEL_0, &configCanalADCPort);
+
+
+
+
+    int valorDigitalPot;
+    float coefConv = 4000/pow(2,ADC_BITWIDTH_9);
+    while(1)
+    {
+        adc_oneshot_read(h_pot1, ADC_CHANNEL_0, &valorDigitalPot);
+        vTaskDelay (pdMS_TO_TICKS(2000));
+        ESP_LOGI(TAG, "Valor digital: %d coefConversion es: %f, el valor de tensión es: %f V", valorDigitalPot, coefConv, valorDigitalPot*coefConv);
+
+
+    }
+}
+
+
+CMakeList.Txt:
+idf_component_register(SRCS "hello_world_main.c"
+                    PRIV_REQUIRES spi_flash
+                    INCLUDE_DIRS ""
+                    REQUIRES esp_driver_gpio REQUIRES esp_timer REQUIRES esp_adc)
+
+
+
+
